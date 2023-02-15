@@ -323,7 +323,7 @@ app.post("/get_patientInfo", (req, res) => {
       getDetails.DLNo,
       getDetails.gender,
       uuid,
-      false,
+      true,
       password,
     ],
   ];
