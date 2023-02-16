@@ -114,7 +114,7 @@ app.get("/hospital", (req, res) => {
 });
 app.post("/Create_Record", (req, res) => {
   const recordReq = req.body;
-  sql = "SELECT * FROM `patients_registration` WHERE FullName =  ? OR uuid = ? ";
+  sql = "SELECT * FROM `patients_registration` WHERE FullName = ? OR uuid = ? ";
   conn.query(sql, [recordReq.PatientName, recordReq.PatientName], (error, patients_result) => {
     console.log(patients_result);
     if (error) {
@@ -297,39 +297,50 @@ app.post("/patientsDashboard", (req, res) => {
 app.post("/get_patientInfo", (req, res) => {
   const getDetails = req.body;
   let uuid = "PAT-" + "ON-" + getDetails.Age + "-" + getDetails.province + "-" + Math.floor(Math.random() * 90000) + 10000;
-  const _fullName = getDetails.Fname + " " + getDetails.LName;
-  console.log(_fullName);
-  var password = crypto.randomBytes(16).toString("hex");
-  sql =
-    "INSERT INTO `patients_registration`(`FName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
-  var VALUES = [
-    [
-      getDetails.Fname,
-      getDetails.LName,
-      _fullName,
-      getDetails.Age,
-      getDetails.bloodGroup,
-      getDetails.number,
-      getDetails.EmailId,
-      getDetails.Address,
-      getDetails.Location,
-      getDetails.PostalCode,
-      getDetails.City,
-      getDetails.province,
-      getDetails.H_CardNo,
-      getDetails.PassportNo,
-      getDetails.PRNo,
-      getDetails.DLNo,
-      getDetails.gender,
-      uuid,
-      true,
-      password,
-    ],
-  ];
-
-  conn.query(sql, [VALUES], (error, result) => {
+  const _email = getDetails.EmailId;
+  sql = "SELECT * from patients_registration WHERE emailId = ?";
+  conn.query(sql, [_email], (error, result) => {
     if (error) throw error;
-    res.render("pages/thankyou");
+    console.log(result);
+    if (result.length > 0) {
+      res.send({ status: 1, msg: "email is exist", data: record_result });
+      return;
+    } else {
+      const _fullName = getDetails.Fname + " " + getDetails.LName;
+      console.log(_fullName);
+      var password = crypto.randomBytes(16).toString("hex");
+      sql =
+        "INSERT INTO `patients_registration`(`FName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
+      var VALUES = [
+        [
+          getDetails.Fname,
+          getDetails.LName,
+          _fullName,
+          getDetails.Age,
+          getDetails.bloodGroup,
+          getDetails.number,
+          getDetails.EmailId,
+          getDetails.Address,
+          getDetails.Location,
+          getDetails.PostalCode,
+          getDetails.City,
+          getDetails.province,
+          getDetails.H_CardNo,
+          getDetails.PassportNo,
+          getDetails.PRNo,
+          getDetails.DLNo,
+          getDetails.gender,
+          uuid,
+          true,
+          password,
+        ],
+      ];
+
+      conn.query(sql, [VALUES], (error, result) => {
+        if (error) throw error;
+        res.render("pages/thankyou");
+      });
+    }
   });
 });
 app.post("/get_doctorInfo", (req, res) => {
