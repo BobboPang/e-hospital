@@ -293,11 +293,11 @@ app.post("/patientsDashboard", (req, res) => {
     }
   });
 });
-
+// patients register
 app.post("/get_patientInfo", (req, res) => {
   const getDetails = req.body;
   let uuid = "PAT-" + "ON-" + getDetails.Age + "-" + getDetails.province + "-" + Math.floor(Math.random() * 90000) + 10000;
-  const _fullName = getDetails.Fname + " " + getDetails.Mname + " " + getDetails.LName;
+  const _fullName = getDetails.Fname + " " + getDetails.LName;
   console.log(_fullName);
   var password = crypto.randomBytes(16).toString("hex");
   sql =
