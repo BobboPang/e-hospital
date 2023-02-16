@@ -117,7 +117,7 @@ app.post("/Create_Record", (req, res) => {
   sql = "SELECT * FROM `patients_registration` WHERE FullName = ? OR uuid = ? ";
   conn.query(sql, [recordReq.PatientName, recordReq.PatientName], (error, patients_result) => {
     console.log(patients_result);
-    if (error) {
+    if (error || patients_result.length == 0) {
       res.send({ status: 0, msg: "database didn't including this patients", data: {} });
       throw error;
     }
@@ -312,7 +312,7 @@ app.post("/get_patientInfo", (req, res) => {
     } else {
       const _fullName = getDetails.Fname + " " + getDetails.LName;
       console.log(_fullName);
-      var password = crypto.randomBytes(16).toString("hex");
+      // var password = crypto.randomBytes(16).toString("hex");
       sql =
         "INSERT INTO `patients_registration`(`FName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
       var VALUES = [
@@ -336,7 +336,7 @@ app.post("/get_patientInfo", (req, res) => {
           getDetails.gender,
           uuid,
           true,
-          password,
+          getDetails.Password,
         ],
       ];
 
