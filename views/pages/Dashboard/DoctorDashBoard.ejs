@@ -312,6 +312,7 @@
                     </div>
                 </form>
                 <button class="submitBtn" onclick="submit()">Predict & submit</button>
+                <div id="tips" style="color:red; fontSize: 20px">please wait...</div>
             </div>
         </div>
     </div>
@@ -340,6 +341,7 @@
 
     <script>
         $(function () {
+            $('#tips').hide();
             $('#modal').hide();
             $('#createRecordBtn').click(function () {
                 $('#modal').show();
@@ -413,9 +415,11 @@
                     $('#record_table_data').children().remove();
                     data.forEach((ele) => {
                         var tdlie = document.createElement("tr");
-                        const str = "<td>" + ele.id + "</td><td>" + ele.PatientName + "</td><td>" + ele.uuid + "</td><td>"+ ele.Gender + "</td>" +
+                        const str = "<td>" + ele.id + "</td><td>" + ele.PatientName + "</td><td>" +
+                            ele.uuid + "</td><td>" + ele.Gender + "</td>" +
                             "<td>" + (ele.isSick ? ele.CaseName :
-                                "You are healthy!") + "</td><td><button onclick=handleDelete(this)>delete</button></td>"
+                                "You are healthy!") +
+                            "</td><td><button onclick=handleDelete(this)>delete</button></td>"
                         $(tdlie).html(str)
                         console.log(str)
                         console.log(tdlie)
@@ -428,16 +432,16 @@
         function submit() {
             var file_data = new FormData($('#upload-file')[0]);
             var form_data = new FormData($('#form-data')[0]);
-
+            $('#tips').text("please wait...");
+            $('#tips').show();
             if (file_data.get('file').size == 0) {
-                $(".alart").html("<b>please upload a file!</b>")
+                $('#tips').text("please upload a file!");
                 return;
             }
             if (!form_data.get('PatientName') || !form_data.get('Gender')) {
-                $(".alart").html("<b>please input PatientName or Gender!</b>")
+                $('#tips').text("please input PatientName or Gender!");
                 return;
             }
-
             // Make prediction by calling api /predict
             $.ajax({
                 headers: {
@@ -456,7 +460,8 @@
                     const result = eval('(' + data + ')');
                     var _caseName = '';
                     for (item in result) {
-                        if (result[item].length > 0) _caseName += item + ': [' + result[item].join() + ']' +';'//&& item!=='Normal'
+                        if (result[item].length > 0) _caseName += item + ': [' + result[item].join() + ']' +
+                            ';' //&& item!=='Normal'
                     }
                     console.log(_caseName)
                     const isSick = result.APC.length > 0 || result.LBB.length > 0 || result.PAB.length >
@@ -475,12 +480,18 @@
                         async: true,
                         success: function (data) {
                             console.log('Success!', data);
-                            getSicknessRecord();
-                            $('#modal').hide();
+                            if (data.status == 2) {
+                                $('#tips').text("this patients already had a record")
+                            } else {
+                                getSicknessRecord();
+                                $('#tips').hide();
+                                $('#modal').hide();
+                            }
                         },
                     });
                 },
                 error: function () {
+                    $('#tips').hide();
                     console.log('errerer')
                 },
             });

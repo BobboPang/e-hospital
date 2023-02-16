@@ -121,6 +121,9 @@ app.post("/Create_Record", (req, res) => {
       res.send({ status: 0, msg: "database didn't including this patients", data: {} });
       throw error;
     }
+    if (recordReq.CaseName) {
+      res.send({ status: 2, msg: " this patients already had a record", data: {} });
+    }
     sql = `INSERT INTO sickness_record set CaseName='${recordReq.CaseName}', PatientName='${recordReq.PatientName}', uuid='${patients_result[0].uuid}', Gender='${recordReq.Gender}', isSick=${
       recordReq.isSick === "true" ? 1 : 0
     };`;
