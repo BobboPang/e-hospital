@@ -301,6 +301,10 @@ app.post("/get_patientInfo", (req, res) => {
   const getDetails = req.body;
   let uuid = "PAT-" + "ON-" + getDetails.Age + "-" + getDetails.province + "-" + Math.floor(Math.random() * 90000) + 10000;
   const _email = getDetails.EmailId;
+  if(getDetails.Password_confirm!==getDetails.Password) {
+    res.send({ status: 1, msg: "please double check Password" });
+    return;
+  };
   sql = "SELECT * from patients_registration WHERE emailId = ?";
   conn.query(sql, [_email], (error, result) => {
     if (error) throw error;
@@ -350,6 +354,10 @@ app.post("/get_doctorInfo", (req, res) => {
   // var password = crypto.randomBytes(16).toString("hex");
   let uuid = "DOC-" + "ON-" + get_doctorInfo.age + "-" + get_doctorInfo.province + "-" + Math.floor(Math.random() * 90000) + 10000;
   const _email = get_doctorInfo.EmailId;
+  if(get_doctorInfo.Password_confirm!==get_doctorInfo.Password) {
+    res.send({ status: 1, msg: "please double check Password" });
+    return;
+  };
   sql = "SELECT * from doctors_registration WHERE emailId = ?";
   conn.query(sql, [_email], (error, result) => {
     if (error) throw error;
