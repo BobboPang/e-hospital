@@ -301,11 +301,10 @@ app.post("/get_patientInfo", (req, res) => {
   console.log(_fullName);
   var password = crypto.randomBytes(16).toString("hex");
   sql =
-    "INSERT INTO `patients_registration`(`FName`, `MName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
+    "INSERT INTO `patients_registration`(`FName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
   var VALUES = [
     [
       getDetails.Fname,
-      getDetails.Mname,
       getDetails.LName,
       _fullName,
       getDetails.Age,
