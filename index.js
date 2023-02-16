@@ -121,27 +121,26 @@ app.post("/Create_Record", (req, res) => {
       res.send({ status: 0, msg: "database didn't including this patients", data: {} });
       throw error;
     }
-    if (recordReq.CaseName) {
+    if (patients_result[0].CaseName && patients_result[0].CaseName.length !== 0) {
       res.send({ status: 2, msg: " this patients already had a record", data: {} });
-      throw error;
-    }
-    sql = `INSERT INTO sickness_record set CaseName='${recordReq.CaseName}', PatientName='${recordReq.PatientName}', uuid='${patients_result[0].uuid}', Gender='${recordReq.Gender}', isSick=${
-      recordReq.isSick === "true" ? 1 : 0
-    };`;
-    console.log(sql);
-    conn.query(sql, (error, record_result) => {
-      if (error) {
-        res.send({ status: 0, msg: "INSERT INTO sickness_record fail", data: error });
-        throw error;
-      }
-      if (recordReq.isSick === "true") {
-        sql = `UPDATE patients_registration SET CaseName = ?, isSick=1 WHERE uuid = ?`;
-        conn.query(sql, [recordReq.CaseName, patients_result[0].uuid], (error, record_result) => {
+      return;
+    } else {
+      sql = `INSERT INTO sickness_record set CaseName='${recordReq.CaseName}', PatientName='${recordReq.PatientName}', uuid='${patients_result[0].uuid}', Gender='${recordReq.Gender}', isSick=${
+        recordReq.isSick === "true" ? 1 : 0
+      };`;
+      console.log(sql);
+      conn.query(sql, (error, record_result) => {
+        if (error) {
+          res.send({ status: 0, msg: "INSERT INTO sickness_record fail", data: error });
+          throw error;
+        }
+        sql = `UPDATE patients_registration SET CaseName = ?, isSick = ? WHERE uuid = ?`;
+        conn.query(sql, [recordReq.CaseName, recordReq.isSick === "true" ? 1 : 0, patients_result[0].uuid], (error, record_result) => {
           if (error) throw error;
           res.send({ status: 0, msg: "request success!", data: req.body });
         });
-      } else res.send({ status: 0, msg: "request success!", data: req.body });
-    });
+      });
+    }
   });
 });
 app.post("/Delete_Record", (req, res) => {
@@ -311,7 +310,6 @@ app.post("/get_patientInfo", (req, res) => {
       return;
     } else {
       const _fullName = getDetails.Fname + " " + getDetails.LName;
-      console.log(_fullName);
       // var password = crypto.randomBytes(16).toString("hex");
       sql =
         "INSERT INTO `patients_registration`(`FName`, `LName`,`FullName`, `Age`, `BloodGroup`, `MobileNumber`, `EmailId`, `Address`, `Location`, `PostalCode`, `City`, `Province`, `HCardNumber`, `PassportNumber`, `PRNumber`, `DLNumber`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
@@ -349,42 +347,54 @@ app.post("/get_patientInfo", (req, res) => {
 });
 app.post("/get_doctorInfo", (req, res) => {
   const get_doctorInfo = req.body;
-  var password = crypto.randomBytes(16).toString("hex");
+  // var password = crypto.randomBytes(16).toString("hex");
   let uuid = "DOC-" + "ON-" + get_doctorInfo.age + "-" + get_doctorInfo.province + "-" + Math.floor(Math.random() * 90000) + 10000;
-  // let randomId = Math.floor(Math.random()*90000) + 10000;
-  sql =
-    "INSERT INTO `doctors_registration`(`Fname`, `Mname`, `Lname`, `Age`, `bloodGroup`, `MobileNumber`, `EmailId`, `ConfirmEmail`, `Location1`, `Location2`, `PostalCode`, `City`, `Country`, `Province`, `Medical_LICENSE_Number`, `DLNumber`, `Specialization`, `PractincingHospital`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
-
-  var getDoctorsInfo = [
-    [
-      get_doctorInfo.Fname,
-      get_doctorInfo.Mname,
-      get_doctorInfo.LName,
-      get_doctorInfo.age,
-      get_doctorInfo.bloodGroup,
-      get_doctorInfo.MobileNo,
-      get_doctorInfo.EmailId,
-      get_doctorInfo.ConfirmEmail,
-      get_doctorInfo.Location1,
-      get_doctorInfo.Location1,
-      get_doctorInfo.PostalCode,
-      get_doctorInfo.city,
-      get_doctorInfo.Country,
-      get_doctorInfo.province,
-      get_doctorInfo.MLno,
-      get_doctorInfo.DLNo,
-      get_doctorInfo.Specialization,
-      get_doctorInfo.PractincingHospital,
-      get_doctorInfo.gender,
-      uuid,
-      false,
-      password,
-    ],
-  ];
-
-  conn.query(sql, [getDoctorsInfo], (error, result) => {
+  const _email = get_doctorInfo.EmailId;
+  sql = "SELECT * from doctors_registration WHERE emailId = ?";
+  conn.query(sql, [_email], (error, result) => {
     if (error) throw error;
-    res.render("pages/thankyou");
+    console.log(result);
+    if (result.length > 0) {
+      res.send({ status: 1, msg: "email is exist!" });
+      return;
+    } else {
+      const _fullName = get_doctorInfo.Fname + " " + get_doctorInfo.LName;
+
+      sql =
+        "INSERT INTO `doctors_registration`(`Fname`, `Lname`,`FullName`, `Age`, `bloodGroup`, `MobileNumber`, `EmailId`, `ConfirmEmail`, `Location1`, `Location2`, `PostalCode`, `City`, `Country`, `Province`, `Medical_LICENSE_Number`, `DLNumber`, `Specialization`, `PractincingHospital`, `Gender`, `uuid`, `verification`, `password`) VALUES ?";
+
+      var getDoctorsInfo = [
+        [
+          get_doctorInfo.Fname,
+          get_doctorInfo.LName,
+          _fullName,
+          get_doctorInfo.age,
+          get_doctorInfo.bloodGroup,
+          get_doctorInfo.MobileNo,
+          get_doctorInfo.EmailId,
+          get_doctorInfo.ConfirmEmail,
+          get_doctorInfo.Location1,
+          get_doctorInfo.Location1,
+          get_doctorInfo.PostalCode,
+          get_doctorInfo.city,
+          get_doctorInfo.Country,
+          get_doctorInfo.province,
+          get_doctorInfo.MLno,
+          get_doctorInfo.DLNo,
+          get_doctorInfo.Specialization,
+          get_doctorInfo.PractincingHospital,
+          get_doctorInfo.gender,
+          uuid,
+          true,
+          get_doctorInfo.Password,
+        ],
+      ];
+
+      conn.query(sql, [getDoctorsInfo], (error, result) => {
+        if (error) throw error;
+        res.render("pages/thankyou");
+      });
+    }
   });
 });
 app.post("/Hospital", (req, res) => {
